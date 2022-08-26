@@ -1,9 +1,7 @@
 package com.freddywang.pwk.ui.edit
 
-import android.content.Context
 import android.os.Bundle
 import android.text.SpannableStringBuilder
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -11,12 +9,9 @@ import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import java.security.AccessController.getContext
 
 class EditActivity : AppCompatActivity() {
     private val topAppBar: MaterialToolbar by lazy { findViewById<MaterialToolbar>(R.id.topAppBar) }
-    private val focusTextInputLayout: TextInputLayout by lazy { findViewById(R.id.focus) }
     private val textFieldDes: TextInputEditText by lazy { findViewById<TextInputEditText>(R.id.textField_des) }
     private val textFieldAccount: TextInputEditText by lazy { findViewById<TextInputEditText>(R.id.textField_account) }
     private val textFieldPassword: TextInputEditText by lazy { findViewById<TextInputEditText>(R.id.textField_password) }
@@ -64,7 +59,7 @@ class EditActivity : AppCompatActivity() {
                         Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
                         finish()
                     } else if (way == 1) {
-                        var result = viewModel.addPw(
+                        val result = viewModel.addPw(
                             Password(
                                 textFieldDes.editableText.toString(),
                                 textFieldAccount.editableText.toString(),
@@ -81,6 +76,5 @@ class EditActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
     }
 }

@@ -1,9 +1,6 @@
 package com.freddywang.pwk.logic
 
-import android.app.Activity
 import android.content.Context
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -40,9 +37,3 @@ fun jsonToList(json: String): List<Password> {
 fun listToJson(list: List<Password>): String {
     return Gson().toJson(list)
 }
-
-/*
-fun hideInputMethod(act: Activity, v: View) {
-    val imm = act.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(v.windowToken, 0)
-}*/

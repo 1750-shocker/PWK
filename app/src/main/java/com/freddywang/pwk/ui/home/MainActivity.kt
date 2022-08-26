@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     private val requestCodeInput = 1
     private val requestCodeOutput = 2
     private lateinit var viewModel: MainViewModel
-    lateinit var adapter: DataListAdapter
+    private lateinit var adapter: DataListAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                     searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                         override fun onQueryTextSubmit(query: String?): Boolean {
                             if (query != null) {
-                                var list = viewModel.queryWithKeyWord(query)
+                                val list = viewModel.queryWithKeyWord(query)
                                 updateList(list)
                                 return true
                             }
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
 
                         override fun onQueryTextChange(newText: String?): Boolean {
                             if (newText != null) {
-                                var list = viewModel.queryWithKeyWord(newText)
+                                val list = viewModel.queryWithKeyWord(newText)
                                 updateList(list)
                                 return true
                             }
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                 val builder = StringBuilder()
                 val inputStream = contentResolver.openInputStream(uri!!)
                 val reader = BufferedReader(InputStreamReader(inputStream))
-                var line: String? = null
+                var line: String?
                 while (reader.readLine().also { line = it } != null) {
                     builder.append(line)
                 }
