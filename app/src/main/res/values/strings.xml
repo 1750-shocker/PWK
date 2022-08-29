@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">密码本</string>
+    <string name="first_short">first</string>
+    <string name="first_long">查询数据库</string>
+    <string name="password_keeper">添加</string>
+    <string name="edit">修改</string>
+</resources>
