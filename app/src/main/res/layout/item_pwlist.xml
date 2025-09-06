@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
-    android:background="@color/shrine_pink_100"
+    android:background="@color/list_item_background"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical">
@@ -16,7 +16,7 @@
         android:layout_marginStart="10dp"
         android:layout_weight="1"
         android:text="about"
-        android:textColor="@color/teal_700"
+        android:textColor="?attr/colorPrimary"
         android:textSize="17sp" />
 
     <TextView
@@ -26,7 +26,7 @@
         android:layout_marginStart="10dp"
         android:layout_weight="1"
         android:text="account"
-        android:textColor="@color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="15sp" />
 
     <TextView
@@ -36,6 +36,6 @@
         android:layout_marginStart="10dp"
         android:layout_weight="1"
         android:text="password"
-        android:textColor="@color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="15sp" />
 </LinearLayout>

@@ -18,7 +18,9 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:menu="@menu/top_app_bar_edit"
-            app:navigationIcon="@drawable/ic_close" />
+            app:navigationIcon="@drawable/ic_close"
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:navigationIconTint="?attr/colorOnPrimary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -34,7 +36,7 @@
             android:layout_marginHorizontal="10dp"
             android:hint="@string/des"
             app:endIconMode="clear_text"
-            app:hintTextColor="@color/black">
+            app:hintTextColor="?android:attr/textColorSecondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/textField_des"
@@ -51,7 +53,7 @@
             android:layout_marginHorizontal="10dp"
             android:hint="@string/account"
             app:endIconMode="clear_text"
-            app:hintTextColor="@color/black">
+            app:hintTextColor="?android:attr/textColorSecondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/textField_account"
@@ -68,7 +70,7 @@
             android:layout_marginHorizontal="10dp"
             android:hint="@string/password"
             app:endIconMode="clear_text"
-            app:hintTextColor="@color/black">
+            app:hintTextColor="?android:attr/textColorSecondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/textField_password"

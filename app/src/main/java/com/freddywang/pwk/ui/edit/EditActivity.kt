@@ -5,6 +5,7 @@ import android.text.SpannableStringBuilder
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.core.content.ContextCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
 import com.google.android.material.appbar.MaterialToolbar
@@ -30,6 +31,10 @@ class EditActivity : AppCompatActivity() {
                 textFieldPassword.text = SpannableStringBuilder(bundle["password"].toString())
             }
         }
+        
+        // 设置工具栏菜单项颜色
+        setupToolbarMenuColors()
+        
         val viewModel = ViewModelProvider(this).get(EditViewModel::class.java)
         topAppBar.setNavigationOnClickListener {
             if (way == 2) {
@@ -76,5 +81,17 @@ class EditActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+    
+    private fun setupToolbarMenuColors() {
+        // 获取当前主题的颜色
+        val typedArray = theme.obtainStyledAttributes(intArrayOf(
+            com.google.android.material.R.attr.colorOnPrimary
+        ))
+        val textColor = typedArray.getColor(0, ContextCompat.getColor(this, android.R.color.white))
+        typedArray.recycle()
+        
+        // 设置溢出菜单图标颜色
+        topAppBar.overflowIcon?.setTint(textColor)
     }
 }

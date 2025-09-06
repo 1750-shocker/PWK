@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 基础颜色 -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,7 +9,11 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- 应用主色调 -->
     <color name="shrine_pink_100">#ffcdd2</color>
     <color name="shrine_pink_300">#E57373</color>
     <color name="shrine_pink_900">#442C2E</color>
+    
+    <!-- 列表项背景色 -->
+    <color name="list_item_background_light">#F8BBD9</color>
 </resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 暗黑模式列表项背景色 -->
+    <color name="list_item_background_light">#2D1B20</color>
+    
+    <!-- 暗黑模式下的主色调适配 -->
+    <color name="shrine_pink_100">#2D1B20</color>
+    <color name="shrine_pink_300">#FFB4D6</color>
+    <color name="shrine_pink_900">#E6E0E9</color>
+</resources>

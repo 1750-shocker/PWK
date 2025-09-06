@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.ContextCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.jsonToList
 import com.freddywang.pwk.logic.listToJson
@@ -43,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         /* viewModel.loadAllPassword().observe(
              this
          ) { updateList(it) }*/
+        // 设置工具栏菜单项颜色
+        setupToolbarMenuColors()
+        
         topAppBar.setNavigationOnClickListener {
             val intent = Intent(this, EditActivity::class.java)
             intent.putExtra("way", 1)
@@ -150,5 +154,17 @@ class MainActivity : AppCompatActivity() {
 //        adapter.notifyDataSetChanged()
         adapter = DataListAdapter(this, list, viewModel)
         recyclerView.adapter = adapter
+    }
+    
+    private fun setupToolbarMenuColors() {
+        // 获取当前主题的颜色
+        val typedArray = theme.obtainStyledAttributes(intArrayOf(
+            com.google.android.material.R.attr.colorOnPrimary
+        ))
+        val textColor = typedArray.getColor(0, ContextCompat.getColor(this, android.R.color.white))
+        typedArray.recycle()
+        
+        // 设置溢出菜单图标颜色
+        topAppBar.overflowIcon?.setTint(textColor)
     }
 }
