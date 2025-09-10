@@ -64,19 +64,10 @@ abstract class AppDatabase : RoomDatabase() {
 fun jsonToList(json: String): List<Password> {
     val type = object : TypeToken<List<Password>>() {}.type
     val passwords = Gson().fromJson<List<Password>>(json, type)
-    // 确保导入的密码标记为未加密（将在保存时重新加密）
-    return passwords.map { password ->
-        if (password.isEncrypted) {
-            Password(
-                des = password.des,
-                account = password.account,
-                password = password.password,
-                isEncrypted = false  // 标记为未加密，将在保存时重新加密
-            )
-        } else {
-            password
-        }
-    }
+    
+    // 完全信任JSON中的isEncrypted标志
+    // 导出功能会确保所有密码都实际加密，导入时直接使用标志
+    return passwords
 }
 
 fun listToJson(list: List<Password>): String {

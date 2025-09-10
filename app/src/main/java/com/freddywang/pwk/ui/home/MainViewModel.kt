@@ -53,17 +53,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addPw(password: Password): Long {
         clearCache() // 添加新数据时清除缓存
-        // 加密密码
-        val encryptedPassword = if (!password.isEncrypted) {
-            Password(
-                des = password.des,
-                account = password.account,
-                password = CryptoUtil.encrypt(getApplication(), password.password),
-                isEncrypted = true
-            )
-        } else {
-            password
-        }
+        // 无论标记如何，都进行实际加密以确保数据安全
+        val encryptedPassword = Password(
+            des = password.des,
+            account = password.account,
+            password = CryptoUtil.encrypt(getApplication(), password.password),
+            isEncrypted = true
+        )
         return myDatabase.passwordDao().insertPassword(encryptedPassword)
     }
 

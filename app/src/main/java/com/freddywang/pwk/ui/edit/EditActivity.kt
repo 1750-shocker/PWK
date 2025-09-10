@@ -41,13 +41,10 @@ class EditActivity : AppCompatActivity() {
                 
                 // 检查密码是否加密并解密显示
                 val passwordFromBundle = bundle["password"].toString()
-                val decryptedPassword = if (passwordFromBundle.startsWith("encrypted:")) {
-                    try {
-                        CryptoUtil.decrypt(this, passwordFromBundle.substring(10))
-                    } catch (e: Exception) {
-                        passwordFromBundle
-                    }
-                } else {
+                val decryptedPassword = try {
+                    // 尝试解密，如果失败则说明是明文
+                    CryptoUtil.decrypt(this, passwordFromBundle)
+                } catch (e: Exception) {
                     passwordFromBundle
                 }
                 textFieldPassword.text = SpannableStringBuilder(decryptedPassword)
@@ -76,13 +73,20 @@ class EditActivity : AppCompatActivity() {
                     } else if (textFieldPassword.editableText.isEmpty()) {
                         Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show()
                     } else if (way == 2) {
-                        // 加密密码
-                        val encryptedPassword = CryptoUtil.encrypt(this, textFieldPassword.text.toString())
+                        // 检查密码是否已经加密，避免双重加密
+                        val currentPassword = textFieldPassword.text.toString()
+                        val (finalPassword, isEncrypted) = if (currentPassword.matches("^[A-Za-z0-9+/]*={0,2}$".toRegex()) && currentPassword.length > 20) {
+                            // 看起来像加密数据，保持原样
+                            Pair(currentPassword, true)
+                        } else {
+                            // 明文数据，需要加密
+                            Pair(CryptoUtil.encrypt(this, currentPassword), true)
+                        }
                         val p = Password(
                             textFieldDes.text.toString(),
                             textFieldAccount.text.toString(),
-                            encryptedPassword,
-                            isEncrypted = true
+                            finalPassword,
+                            isEncrypted = isEncrypted
                         )
                         p.id = id
                         viewModel.updatePw(p)

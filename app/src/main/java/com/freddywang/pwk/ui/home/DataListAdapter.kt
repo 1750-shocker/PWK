@@ -52,15 +52,12 @@ class DataListAdapter(
         // 设置密码显示状态
         val isPasswordVisible = passwordVisibility[password.id] ?: false
         dataViewHolder.passwordTv.text = if (isPasswordVisible) {
-            // 解密密码用于显示
-            if (password.isEncrypted) {
-                try {
-                    CryptoUtil.decrypt(context, password.password)
-                } catch (e: Exception) {
-                    "解密失败"
-                }
-            } else {
-                password.password
+            // 使用ViewModel的解密方法
+            try {
+                val decryptedPassword = viewModel.getDecryptedPassword(context, password)
+                decryptedPassword.password
+            } catch (e: Exception) {
+                "解密失败"
             }
         } else {
             "•".repeat(8) // 显示8个黑点
@@ -71,7 +68,13 @@ class DataListAdapter(
         dataViewHolder.visibilitySwitch.setOnCheckedChangeListener { _, isChecked ->
             passwordVisibility[password.id] = isChecked
             dataViewHolder.passwordTv.text = if (isChecked) {
-                password.password
+                // 使用ViewModel的解密方法
+                try {
+                    val decryptedPassword = viewModel.getDecryptedPassword(context, password)
+                    decryptedPassword.password
+                } catch (e: Exception) {
+                    "解密失败"
+                }
             } else {
                 "•".repeat(8)
             }
