@@ -158,10 +158,13 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList(list: ArrayList<Password>?) {
-        //TODO:p90,adapter.notifyDataSetChanged()
-//        adapter.notifyDataSetChanged()
-        adapter = DataListAdapter(this, list, viewModel)
-        recyclerView.adapter = adapter
+        if (::adapter.isInitialized) {
+            adapter.submitPasswordList(list)
+        } else {
+            adapter = DataListAdapter(this, viewModel)
+            recyclerView.adapter = adapter
+            adapter.submitPasswordList(list)
+        }
     }
     
     private fun setupToolbarMenuColors() {
