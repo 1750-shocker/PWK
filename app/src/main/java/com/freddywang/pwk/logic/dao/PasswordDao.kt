@@ -14,7 +14,7 @@ interface PasswordDao {
     @Query("select * from Password")
     fun outPutAllPassword(): List<Password>?
 
-     @Query("select * from Password where des like '%'||:keyword||'%'")
+     @Query("select * from Password where des like '%' || :keyword || '%'")
     fun queryWithKeyWord(keyword: String): List<Password>
 
     @Delete

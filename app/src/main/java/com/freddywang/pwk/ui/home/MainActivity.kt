@@ -5,18 +5,22 @@ import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.jsonToList
 import com.freddywang.pwk.logic.listToJson
 import com.freddywang.pwk.logic.model.Password
 import com.freddywang.pwk.ui.edit.EditActivity
 import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -29,9 +33,17 @@ class MainActivity : AppCompatActivity() {
     private val requestCodeOutput = 2
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: DataListAdapter
+    private var searchJob: Job? = null
+    private val searchScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         val manager = LinearLayoutManager(this)
         manager.orientation = LinearLayoutManager.VERTICAL
@@ -76,21 +88,17 @@ class MainActivity : AppCompatActivity() {
                     searchView.queryHint = "输入关键词"
                     searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                         override fun onQueryTextSubmit(query: String?): Boolean {
-                            if (query != null) {
-                                val list = viewModel.queryWithKeyWord(query)
-                                updateList(list)
-                                return true
-                            }
-                            return false
+                            query?.let { performSearch(it) }
+                            return true
                         }
 
                         override fun onQueryTextChange(newText: String?): Boolean {
-                            if (newText != null) {
-                                val list = viewModel.queryWithKeyWord(newText)
-                                updateList(list)
-                                return true
+                            searchJob?.cancel()
+                            searchJob = searchScope.launch {
+                                delay(300) // 防抖延迟300ms
+                                newText?.let { performSearch(it) }
                             }
-                            return false
+                            return true
                         }
 
                     })
@@ -166,5 +174,19 @@ class MainActivity : AppCompatActivity() {
         
         // 设置溢出菜单图标颜色
         topAppBar.overflowIcon?.setTint(textColor)
+    }
+
+    private fun performSearch(query: String) {
+        if (query.isEmpty()) {
+            updateList(viewModel.outPutAllPassword())
+        } else {
+            val list = viewModel.queryWithKeyWord(query)
+            updateList(list)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        searchScope.cancel()
     }
 }

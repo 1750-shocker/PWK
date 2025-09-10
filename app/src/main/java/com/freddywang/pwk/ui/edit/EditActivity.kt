@@ -3,9 +3,12 @@ package com.freddywang.pwk.ui.edit
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
 import com.google.android.material.appbar.MaterialToolbar
@@ -19,7 +22,13 @@ class EditActivity : AppCompatActivity() {
     private var way: Int = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_edit)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         way = intent.getIntExtra("way", 1)
         var id: Long = 0
         if (way == 2) {
