@@ -20,6 +20,7 @@ import com.freddywang.pwk.logic.jsonToList
 import com.freddywang.pwk.logic.listToJson
 import com.freddywang.pwk.logic.model.Password
 import com.freddywang.pwk.ui.edit.EditActivity
+import com.freddywang.pwk.util.CryptoUtil
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.*
 import java.io.BufferedReader
@@ -160,7 +161,36 @@ class MainActivity : AppCompatActivity() {
                 val outputStream = contentResolver.openOutputStream(uri!!)
                 val writer = BufferedWriter(OutputStreamWriter(outputStream))
                 val list: ArrayList<Password>? = viewModel.outPutAllPassword()
-                val text: String? = list?.let { listToJson(it) }
+                // 在导出前确保所有密码都经过实际加密处理
+                val encryptedList = list?.map { password ->
+                    if (!password.isEncrypted) {
+                        // 加密未加密的密码
+                        val encryptedPassword = CryptoUtil.encrypt(this, password.password)
+                        Password(
+                            des = password.des,
+                            account = password.account,
+                            password = encryptedPassword,
+                            isEncrypted = true
+                        )
+                    } else {
+                        // 对于已标记为加密但可能仍是明文的密码，进行实际加密
+                        // 检查密码内容是否看起来像加密数据（Base64格式）
+                        val isActuallyEncrypted = password.password.matches("^[A-Za-z0-9+/]*={0,2}$".toRegex()) && 
+                                                  password.password.length > 20
+                        if (!isActuallyEncrypted) {
+                            val encryptedPassword = CryptoUtil.encrypt(this, password.password)
+                            Password(
+                                des = password.des,
+                                account = password.account,
+                                password = encryptedPassword,
+                                isEncrypted = true
+                            )
+                        } else {
+                            password
+                        }
+                    }
+                }
+                val text: String? = encryptedList?.let { listToJson(it) }
                 writer.write(text)
                 writer.close()
                 Toast.makeText(this, "导出完成", Toast.LENGTH_SHORT).show()
