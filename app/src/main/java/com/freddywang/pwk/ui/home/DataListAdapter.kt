@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
@@ -22,6 +23,7 @@ class DataListAdapter(
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    private val passwordVisibility = mutableMapOf<Int, Boolean>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val view: View = LayoutInflater.from(context).inflate(R.layout.item_pwlist, parent, false)
@@ -40,7 +42,26 @@ class DataListAdapter(
         val dataViewHolder = holder as DataViewHolder
         dataViewHolder.aboutTv.text = passwordList!![position].des
         dataViewHolder.accountTv.text = passwordList[position].account
-        dataViewHolder.passwordTv.text = passwordList[position].password
+        
+        // 设置密码显示状态
+        val isPasswordVisible = passwordVisibility[position] ?: false
+        dataViewHolder.passwordTv.text = if (isPasswordVisible) {
+            passwordList[position].password
+        } else {
+            "•".repeat(8) // 显示8个黑点
+        }
+        
+        // 设置开关状态
+        dataViewHolder.visibilitySwitch.isChecked = isPasswordVisible
+        dataViewHolder.visibilitySwitch.setOnCheckedChangeListener { _, isChecked ->
+            passwordVisibility[position] = isChecked
+            dataViewHolder.passwordTv.text = if (isChecked) {
+                passwordList[position].password
+            } else {
+                "•".repeat(8)
+            }
+        }
+
         dataViewHolder.ll.setOnLongClickListener {
             val builder = AlertDialog.Builder(context)
             builder.setTitle("删除/编辑")
@@ -93,11 +114,14 @@ class DataListAdapter(
         var accountTv: TextView
         var passwordTv: TextView
         var ll: LinearLayout
+        var visibilitySwitch: SwitchCompat
+        
         init {
             ll = itemView.findViewById(R.id.ll_item)
             aboutTv = itemView.findViewById(R.id.tv_about)
             accountTv = itemView.findViewById(R.id.tv_account)
             passwordTv = itemView.findViewById(R.id.tv_password)
+            visibilitySwitch = itemView.findViewById(R.id.switch_visibility)
         }
     }
 

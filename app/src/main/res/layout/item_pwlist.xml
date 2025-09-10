@@ -7,35 +7,47 @@
     android:background="@color/list_item_background"
     android:clickable="true"
     android:focusable="true"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/tv_about"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="10dp"
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="about"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="17sp" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_account"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_weight="1"
-        android:text="account"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tv_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="about"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="17sp" />
 
-    <TextView
-        android:id="@+id/tv_password"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_weight="1"
-        android:text="password"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tv_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="account"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tv_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="password"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switch_visibility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="10dp"
+        android:checked="false" />
 </LinearLayout>
