@@ -11,6 +11,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -48,6 +49,17 @@ class MainActivity : AppCompatActivity() {
         val manager = LinearLayoutManager(this)
         manager.orientation = LinearLayoutManager.VERTICAL
         recyclerView.layoutManager = manager
+        // 启用视图回收池，提高滚动性能
+        recyclerView.setItemViewCacheSize(20)
+        recyclerView.setHasFixedSize(true) // item固定高度时设为true
+        
+        // 添加item间距装饰器
+        val itemDecoration = DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
+        ContextCompat.getDrawable(this, R.drawable.divider)?.let {
+            itemDecoration.setDrawable(it)
+        }
+//        recyclerView.addItemDecoration(itemDecoration)
+        
         /*recyclerView.setHasFixedSize(true)
         list = viewModel.outPutAllPassword()
         adapter = DataListAdapter(this, list, viewModel)

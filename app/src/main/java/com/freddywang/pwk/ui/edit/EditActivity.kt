@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
+import com.freddywang.pwk.util.CryptoUtil
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
 
@@ -37,7 +38,19 @@ class EditActivity : AppCompatActivity() {
                 id = bundle["id"] as Long
                 textFieldDes.text = SpannableStringBuilder(bundle["des"].toString())
                 textFieldAccount.text = SpannableStringBuilder(bundle["account"].toString())
-                textFieldPassword.text = SpannableStringBuilder(bundle["password"].toString())
+                
+                // 检查密码是否加密并解密显示
+                val passwordFromBundle = bundle["password"].toString()
+                val decryptedPassword = if (passwordFromBundle.startsWith("encrypted:")) {
+                    try {
+                        CryptoUtil.decrypt(this, passwordFromBundle.substring(10))
+                    } catch (e: Exception) {
+                        passwordFromBundle
+                    }
+                } else {
+                    passwordFromBundle
+                }
+                textFieldPassword.text = SpannableStringBuilder(decryptedPassword)
             }
         }
         
@@ -63,21 +76,27 @@ class EditActivity : AppCompatActivity() {
                     } else if (textFieldPassword.editableText.isEmpty()) {
                         Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show()
                     } else if (way == 2) {
+                        // 加密密码
+                        val encryptedPassword = CryptoUtil.encrypt(this, textFieldPassword.text.toString())
                         val p = Password(
                             textFieldDes.text.toString(),
                             textFieldAccount.text.toString(),
-                            textFieldPassword.text.toString()
+                            encryptedPassword,
+                            isEncrypted = true
                         )
                         p.id = id
                         viewModel.updatePw(p)
                         Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
                         finish()
                     } else if (way == 1) {
+                        // 加密密码
+                        val encryptedPassword = CryptoUtil.encrypt(this, textFieldPassword.editableText.toString())
                         val result = viewModel.addPw(
                             Password(
                                 textFieldDes.editableText.toString(),
                                 textFieldAccount.editableText.toString(),
-                                textFieldPassword.editableText.toString()
+                                encryptedPassword,
+                                isEncrypted = true
                             )
                         )
                         if (result > 0) {

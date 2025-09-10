@@ -6,11 +6,7 @@ import com.freddywang.pwk.logic.AppDatabase
 import com.freddywang.pwk.logic.model.Password
 
 class EditViewModel(application: Application) : AndroidViewModel(application) {
-    private var myDatabase: AppDatabase
-
-    init {
-        myDatabase = AppDatabase.getDatabase(application)
-    }
+    private var myDatabase: AppDatabase = AppDatabase.getDatabase(application)
 
     fun addPw(password: Password): Long {
         return myDatabase.passwordDao().insertPassword(password)
