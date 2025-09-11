@@ -45,10 +45,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deletePw(password: Password) {
         myDatabase.passwordDao().deletePassword(password)
+        clearCache() // 删除数据后清除缓存
     }
 
     fun cleanTable(){
         myDatabase.passwordDao().cleanTable()
+        clearCache() // 清空表后清除缓存
     }
 
     fun addPw(password: Password): Long {

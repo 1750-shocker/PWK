@@ -88,12 +88,14 @@ class DataListAdapter(
             ) { _: DialogInterface?, _: Int ->
                 try {
                     viewModel.deletePw(password)
+                    // 删除后刷新列表
+                    val updatedList = viewModel.outPutAllPassword()
+                    submitPasswordList(updatedList)
+                    Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show()
                 } catch (e: SQLException) {
                     e.printStackTrace()
+                    Toast.makeText(context, "删除失败", Toast.LENGTH_SHORT).show()
                 }
-                // 这里应该由liveData观察回调触发更新
-                // 手动移除数据项会导致与LiveData数据不同步
-
             }
             builder.setNegativeButton(
                 "编辑"

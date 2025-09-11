@@ -7,7 +7,7 @@ plugins {
 android {
     namespace 'com.freddywang.pwk'
     compileSdk 34
-    buildToolsVersion "34.0.0"
+    // 移除buildToolsVersion，让AGP自动选择合适版本
 
     defaultConfig {
         applicationId "com.freddywang.pwk"

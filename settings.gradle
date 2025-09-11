@@ -10,21 +10,26 @@ pluginManagement {
         google()
         mavenCentral()
     }
+    plugins {
+        id 'com.android.application' version '8.9.0'
+        id 'com.android.library' version '8.9.0'
+        id 'org.jetbrains.kotlin.android' version '1.9.22'
+    }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        // 国内镜像源
+        // 官方源优先
+        google()
+        mavenCentral()
+        
+        // 国内镜像源备用
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         
         // 腾讯云镜像源备用
         maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
-        
-        // 官方源备用
-        google()
-        mavenCentral()
     }
 }
 rootProject.name = "PWK"

@@ -73,34 +73,26 @@ class EditActivity : AppCompatActivity() {
                     } else if (textFieldPassword.editableText.isEmpty()) {
                         Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show()
                     } else if (way == 2) {
-                        // 检查密码是否已经加密，避免双重加密
-                        val currentPassword = textFieldPassword.text.toString()
-                        val (finalPassword, isEncrypted) = if (currentPassword.matches("^[A-Za-z0-9+/]*={0,2}$".toRegex()) && currentPassword.length > 20) {
-                            // 看起来像加密数据，保持原样
-                            Pair(currentPassword, true)
-                        } else {
-                            // 明文数据，需要加密
-                            Pair(CryptoUtil.encrypt(this, currentPassword), true)
-                        }
+                        // 编辑模式：直接加密明文密码
+                        val encryptedPassword = CryptoUtil.encrypt(this, textFieldPassword.text.toString())
                         val p = Password(
                             textFieldDes.text.toString(),
                             textFieldAccount.text.toString(),
-                            finalPassword,
-                            isEncrypted = isEncrypted
+                            encryptedPassword,
+                            isEncrypted = true
                         )
                         p.id = id
                         viewModel.updatePw(p)
                         Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
                         finish()
                     } else if (way == 1) {
-                        // 加密密码
-                        val encryptedPassword = CryptoUtil.encrypt(this, textFieldPassword.editableText.toString())
+                        // 新增模式：让ViewModel处理加密
                         val result = viewModel.addPw(
                             Password(
                                 textFieldDes.editableText.toString(),
                                 textFieldAccount.editableText.toString(),
-                                encryptedPassword,
-                                isEncrypted = true
+                                textFieldPassword.editableText.toString(), // 传入明文密码
+                                isEncrypted = false // ViewModel会处理加密
                             )
                         )
                         if (result > 0) {

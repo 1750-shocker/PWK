@@ -163,15 +163,13 @@ class MainActivity : AppCompatActivity() {
                 val outputStream = contentResolver.openOutputStream(uri!!)
                 val writer = BufferedWriter(OutputStreamWriter(outputStream))
                 val list: ArrayList<Password>? = viewModel.outPutAllPassword()
-                // 在导出前确保所有密码都经过实际加密处理
+                // 导出时直接使用数据库中已加密的密码，不需要重复加密
                 val encryptedList = list?.map { password ->
-                    // 无论标记如何，都进行实际加密以确保数据安全
-                    val encryptedPassword = CryptoUtil.encrypt(this, password.password)
                     Password(
                         des = password.des,
                         account = password.account,
-                        password = encryptedPassword,
-                        isEncrypted = true
+                        password = password.password, // 直接使用已加密的密码
+                        isEncrypted = password.isEncrypted
                     )
                 }
                 val text: String? = encryptedList?.let { listToJson(it) }
