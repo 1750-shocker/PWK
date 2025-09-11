@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
@@ -29,6 +31,9 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
 class MainActivity : AppCompatActivity() {
+    companion object{
+        const val TAG = "wzhhh"
+    }
     private val recyclerView: RecyclerView by lazy { findViewById(R.id.recyclerView) }
     private val topAppBar: MaterialToolbar by lazy { findViewById(R.id.topAppBar) }
     private val requestCodeInput = 1
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: DataListAdapter
     private var searchJob: Job? = null
     private val searchScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -65,7 +71,11 @@ class MainActivity : AppCompatActivity() {
         list = viewModel.outPutAllPassword()
         adapter = DataListAdapter(this, list, viewModel)
         recyclerView.adapter = adapter*/
-        updateList(viewModel.outPutAllPassword())
+        // 测试JSON导入导出完整性
+        val jsonIntegrityTest = viewModel.testJsonIntegrity()
+        Log.i(TAG, "JSON完整性测试: ${if (jsonIntegrityTest) "通过" else "失败"}")
+        
+        updateList(viewModel.outPutAllUIPassword())
         /* viewModel.loadAllPassword().observe(
              this
          ) { updateList(it) }*/
@@ -125,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateList(viewModel.outPutAllPassword())
+        updateList(viewModel.outPutAllUIPassword())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -146,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.cleanTable()
                 for (i in list.indices) {
                     try {
-                        viewModel.addPw(list[i])
+                        viewModel.addPw2(list[i])
                     } catch (e: SQLiteConstraintException) {
                         e.printStackTrace()
                         Toast.makeText(this, "导入失败", Toast.LENGTH_SHORT).show()
@@ -154,15 +164,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 // 导入完成后刷新列表
-                updateList(viewModel.outPutAllPassword())
                 Toast.makeText(this, "导入完成", Toast.LENGTH_SHORT).show()
+                updateList(viewModel.outPutAllUIPassword())
             }
         } else if (requestCode == requestCodeOutput) {
             if (resultCode == RESULT_OK && data != null) {
                 val uri = data.data
                 val outputStream = contentResolver.openOutputStream(uri!!)
                 val writer = BufferedWriter(OutputStreamWriter(outputStream))
-                val list: ArrayList<Password>? = viewModel.outPutAllPassword()
+                val list: ArrayList<Password>? = viewModel.outPutAllDBPassword()
                 // 导出时直接使用数据库中已加密的密码，不需要重复加密
                 val encryptedList = list?.map { password ->
                     Password(
@@ -182,9 +192,18 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList(list: ArrayList<Password>?) {
+        Log.d(TAG, "updateList called with list size: ${list?.size ?: 0}")
+        
+        // 打印列表内容（仅显示描述和账号，不显示密码以保护隐私）
+        list?.forEachIndexed { index, password ->
+            Log.d(TAG, "Item $index: des='${password.des}', account='${password.account}', isEncrypted=${password.isEncrypted}")
+        } ?: Log.d(TAG, "List is null")
+        
         if (::adapter.isInitialized) {
+            Log.d(TAG, "Adapter already initialized, updating existing adapter")
             adapter.submitPasswordList(list)
         } else {
+            Log.d(TAG, "Creating new adapter")
             adapter = DataListAdapter(this, viewModel)
             recyclerView.adapter = adapter
             adapter.submitPasswordList(list)
@@ -205,7 +224,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun performSearch(query: String) {
         if (query.isEmpty()) {
-            updateList(viewModel.outPutAllPassword())
+            updateList(viewModel.outPutAllUIPassword())
         } else {
             val list = viewModel.queryWithKeyWord(query)
             updateList(list)

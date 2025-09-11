@@ -1,6 +1,7 @@
 package com.freddywang.pwk.ui.home
 
 import android.app.AlertDialog
+import android.util.Log
 import android.content.*
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -53,12 +54,7 @@ class DataListAdapter(
         val isPasswordVisible = passwordVisibility[password.id] ?: false
         dataViewHolder.passwordTv.text = if (isPasswordVisible) {
             // 使用ViewModel的解密方法
-            try {
-                val decryptedPassword = viewModel.getDecryptedPassword(context, password)
-                decryptedPassword.password
-            } catch (e: Exception) {
-                "解密失败"
-            }
+            password.password
         } else {
             "•".repeat(8) // 显示8个黑点
         }
@@ -69,12 +65,7 @@ class DataListAdapter(
             passwordVisibility[password.id] = isChecked
             dataViewHolder.passwordTv.text = if (isChecked) {
                 // 使用ViewModel的解密方法
-                try {
-                    val decryptedPassword = viewModel.getDecryptedPassword(context, password)
-                    decryptedPassword.password
-                } catch (e: Exception) {
-                    "解密失败"
-                }
+                password.password
             } else {
                 "•".repeat(8)
             }
@@ -89,7 +80,7 @@ class DataListAdapter(
                 try {
                     viewModel.deletePw(password)
                     // 删除后刷新列表
-                    val updatedList = viewModel.outPutAllPassword()
+                    val updatedList = viewModel.outPutAllUIPassword()
                     submitPasswordList(updatedList)
                     Toast.makeText(context, "删除成功", Toast.LENGTH_SHORT).show()
                 } catch (e: SQLException) {
@@ -101,13 +92,15 @@ class DataListAdapter(
                 "编辑"
             ) { _: DialogInterface?, _: Int ->
                 val intent = Intent(context, EditActivity::class.java)
+                
                 val bundle = Bundle().apply {
                     putLong("id", password.id)
                     putString("des", password.des)
                     putString("account", password.account)
                     putString("password", password.password)
+                    Log.d("wzhhh", "导航到编辑页,传递id:${password.id}")
                 }
-                intent.putExtra("way", 2)
+                intent.putExtra("way", EditActivity.MODE_EDIT)
                 intent.putExtras(bundle)
                 context.startActivity(intent)
             }
@@ -117,15 +110,7 @@ class DataListAdapter(
         }
         dataViewHolder.ll.setOnClickListener {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val passwordToCopy = if (password.isEncrypted) {
-                try {
-                    CryptoUtil.decrypt(context, password.password)
-                } catch (e: Exception) {
-                    password.password
-                }
-            } else {
-                password.password
-            }
+            val passwordToCopy = password.password
             val clip: ClipData =
                 ClipData.newPlainText("password text", passwordToCopy)
             clipboard.setPrimaryClip(clip)
