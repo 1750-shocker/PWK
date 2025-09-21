@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private val topAppBar: MaterialToolbar by lazy { findViewById(R.id.topAppBar) }
     private val requestCodeInput = 1
     private val requestCodeOutput = 2
+    private val requestCodeLegacyInput = 3
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: DataListAdapter
     private var searchJob: Job? = null
@@ -58,7 +59,8 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = manager
         // 启用视图回收池，提高滚动性能
         recyclerView.setItemViewCacheSize(20)
-        recyclerView.setHasFixedSize(true) // item固定高度时设为true
+        recyclerView.setHasFixedSize(false) // 改为false，允许动态高度
+        recyclerView.isNestedScrollingEnabled = true
         
         // 添加item间距装饰器
         val itemDecoration = DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
@@ -72,8 +74,8 @@ class MainActivity : AppCompatActivity() {
         adapter = DataListAdapter(this, list, viewModel)
         recyclerView.adapter = adapter*/
         // 测试JSON导入导出完整性
-        val jsonIntegrityTest = viewModel.testJsonIntegrity()
-        Log.i(TAG, "JSON完整性测试: ${if (jsonIntegrityTest) "通过" else "失败"}")
+//        val jsonIntegrityTest = viewModel.testJsonIntegrity()
+//        Log.i(TAG, "JSON完整性测试: ${if (jsonIntegrityTest) "通过" else "失败"}")
         
         updateList(viewModel.outPutAllUIPassword())
         /* viewModel.loadAllPassword().observe(
@@ -84,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         
         topAppBar.setNavigationOnClickListener {
             val intent = Intent(this, EditActivity::class.java)
-            intent.putExtra("way", 1)
+            intent.putExtra("way", EditActivity.MODE_ADD)
             startActivity(intent)
         }
 
@@ -103,6 +105,17 @@ class MainActivity : AppCompatActivity() {
                     intent.type = "text/plain"
                     intent.putExtra(Intent.EXTRA_TITLE, "password.txt")
                     startActivityForResult(intent, requestCodeOutput)
+                    true
+                }
+                R.id.clear_all -> {
+                    showClearAllConfirmDialog()
+                    true
+                }
+                R.id.import_legacy -> {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    intent.addCategory(Intent.CATEGORY_OPENABLE)
+                    intent.type = "text/plain"
+                    startActivityForResult(intent, requestCodeLegacyInput)
                     true
                 }
                 R.id.search -> {
@@ -152,7 +165,18 @@ class MainActivity : AppCompatActivity() {
                 }
                 inputStream!!.close()
                 val text = builder.toString()
+                Log.d("wzhhh", "导入 - 读取的JSON内容: $text")
+                
+                // 验证应用签名
+                val signatureHash = CryptoUtil.getAppSignatureHash(this)
+                Log.d("wzhhh", "导入 - 当前应用签名: $signatureHash")
+                
                 val list: List<Password> = jsonToList(text)
+                Log.d("wzhhh", "导入 - 解析后密码数量: ${list.size}")
+                list.forEachIndexed { index, password ->
+                    Log.d("wzhhh", "导入 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}, isEncrypted=${password.isEncrypted}")
+                }
+                
                 viewModel.cleanTable()
                 for (i in list.indices) {
                     try {
@@ -173,40 +197,105 @@ class MainActivity : AppCompatActivity() {
                 val outputStream = contentResolver.openOutputStream(uri!!)
                 val writer = BufferedWriter(OutputStreamWriter(outputStream))
                 val list: ArrayList<Password>? = viewModel.outPutAllDBPassword()
-                // 导出时直接使用数据库中已加密的密码，不需要重复加密
-                val encryptedList = list?.map { password ->
-                    Password(
+                Log.d("wzhhh", "导出 - 从数据库获取密码数量: ${list?.size ?: 0}")
+                list?.forEachIndexed { index, password ->
+                    Log.d("wzhhh", "导出 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}, isEncrypted=${password.isEncrypted}")
+                }
+                // 导出时创建不包含id的数据
+                val exportList = list?.map { password ->
+                    ExportPassword(
                         des = password.des,
                         account = password.account,
                         password = password.password, // 直接使用已加密的密码
                         isEncrypted = password.isEncrypted
                     )
                 }
-                val text: String? = encryptedList?.let { listToJson(it) }
+                val text: String? = exportList?.let { 
+                    com.google.gson.Gson().toJson(it)
+                }
+                Log.d("wzhhh", "导出 - JSON内容: $text")
                 writer.write(text)
                 writer.close()
                 Toast.makeText(this, "导出完成", Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == requestCodeLegacyInput) {
+            if (resultCode == RESULT_OK && data != null) {
+                val uri = data.data
+                val builder = StringBuilder()
+                val inputStream = contentResolver.openInputStream(uri!!)
+                val reader = BufferedReader(InputStreamReader(inputStream))
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    builder.append(line)
+                }
+                inputStream!!.close()
+                val text = builder.toString()
+                Log.d("wzhhh", "导入旧版数据 - 读取的JSON内容: $text")
+                
+                // 解析旧版数据
+                try {
+                    val gson = com.google.gson.Gson()
+                    val type = object : com.google.gson.reflect.TypeToken<List<LegacyPassword>>() {}.type
+                    val legacyPasswords: List<LegacyPassword> = gson.fromJson(text, type)
+                    
+                    Log.d("wzhhh", "解析旧版数据数量: ${legacyPasswords.size}")
+                    
+                    // 清空当前数据
+                    viewModel.cleanTable()
+                    
+                    // 导入旧版数据（作为明文密码重新加密）
+                    var successCount = 0
+                    for (legacyPassword in legacyPasswords) {
+                        try {
+                            // 将旧版数据作为明文密码处理，用新密钥重新加密
+                            val newPassword = Password(
+                                des = legacyPassword.des,
+                                account = legacyPassword.account,
+                                password = legacyPassword.password, // 旧版密码作为明文
+                                isEncrypted = false // 标记为明文，让addPw方法重新加密
+                            )
+                            
+                            val result = viewModel.addPw(newPassword)
+                            if (result > 0) {
+                                successCount++
+                                Log.d(TAG, "成功导入旧版密码: ${legacyPassword.des}")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "导入旧版密码失败: ${legacyPassword.des}, 错误: ${e.message}", e)
+                        }
+                    }
+                    
+                    // 刷新列表
+                    updateList(viewModel.outPutAllUIPassword())
+                    
+                    if (successCount > 0) {
+                        Toast.makeText(this, getString(R.string.import_legacy_success), Toast.LENGTH_SHORT).show()
+                        Log.d(TAG, "旧版数据导入完成，成功导入 $successCount 条记录")
+                    } else {
+                        Toast.makeText(this, getString(R.string.import_legacy_failed), Toast.LENGTH_SHORT).show()
+                        Log.e(TAG, "旧版数据导入失败，没有成功导入任何记录")
+                    }
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "解析旧版数据失败: ${e.message}", e)
+                    Toast.makeText(this, "解析旧版数据失败，请检查文件格式", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList(list: ArrayList<Password>?) {
-        Log.d(TAG, "updateList called with list size: ${list?.size ?: 0}")
-        
-        // 打印列表内容（仅显示描述和账号，不显示密码以保护隐私）
-        list?.forEachIndexed { index, password ->
-            Log.d(TAG, "Item $index: des='${password.des}', account='${password.account}', isEncrypted=${password.isEncrypted}")
-        } ?: Log.d(TAG, "List is null")
-        
         if (::adapter.isInitialized) {
-            Log.d(TAG, "Adapter already initialized, updating existing adapter")
             adapter.submitPasswordList(list)
+            adapter.notifyDataSetChanged()
+            recyclerView.requestLayout()
         } else {
-            Log.d(TAG, "Creating new adapter")
             adapter = DataListAdapter(this, viewModel)
             recyclerView.adapter = adapter
             adapter.submitPasswordList(list)
+            adapter.notifyDataSetChanged()
+            recyclerView.requestLayout()
         }
     }
     
@@ -221,6 +310,51 @@ class MainActivity : AppCompatActivity() {
         // 设置溢出菜单图标颜色
         topAppBar.overflowIcon?.setTint(textColor)
     }
+    
+    private fun showClearAllConfirmDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.clear_all_confirm_title))
+            .setMessage(getString(R.string.clear_all_confirm_message))
+            .setPositiveButton(getString(R.string.clear_all_confirm_yes)) { _, _ ->
+                clearAllData()
+            }
+            .setNegativeButton(getString(R.string.clear_all_confirm_no), null)
+            .show()
+    }
+    
+    private fun clearAllData() {
+        try {
+            Log.d(TAG, "开始清除所有数据")
+            viewModel.cleanTable()
+            updateList(viewModel.outPutAllUIPassword())
+            Toast.makeText(this, getString(R.string.clear_all_success), Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "所有数据清除完成")
+        } catch (e: Exception) {
+            Log.e(TAG, "清除数据失败: ${e.message}", e)
+            Toast.makeText(this, "清除数据失败", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    
+    /**
+     * 旧版密码数据类（没有isEncrypted字段）
+     */
+    data class LegacyPassword(
+        val account: String,
+        val des: String,
+        val id: Int,
+        val password: String
+    )
+    
+    /**
+     * 导出密码数据类（不包含id字段）
+     */
+    data class ExportPassword(
+        val des: String,
+        val account: String,
+        val password: String,
+        val isEncrypted: Boolean
+    )
 
     private fun performSearch(query: String) {
         if (query.isEmpty()) {

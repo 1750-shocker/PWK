@@ -20,7 +20,7 @@ class EditActivity : AppCompatActivity() {
     companion object {
         const val MODE_ADD = 1
         const val MODE_EDIT = 2
-        const val TAG = "myEditActivity"
+        const val TAG = "wzhhh"
     }
     
     private val topAppBar: MaterialToolbar by lazy { findViewById<MaterialToolbar>(R.id.topAppBar) }
@@ -64,11 +64,12 @@ class EditActivity : AppCompatActivity() {
         topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.save -> {
-                    if (textFieldDes.editableText.isEmpty()) {
+                    Log.d(TAG, "点击保存按钮，当前模式: $way")
+                    if (textFieldDes.text?.toString().isNullOrEmpty()) {
                         Toast.makeText(this, "请输入描述", Toast.LENGTH_SHORT).show()
-                    } else if (textFieldAccount.editableText.isEmpty()) {
+                    } else if (textFieldAccount.text?.toString().isNullOrEmpty()) {
                         Toast.makeText(this, "请输入账号", Toast.LENGTH_SHORT).show()
-                    } else if (textFieldPassword.editableText.isEmpty()) {
+                    } else if (textFieldPassword.text?.toString().isNullOrEmpty()) {
                         Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show()
                     } else if (way == MODE_EDIT) {
                         // 编辑模式：直接加密明文密码
@@ -91,17 +92,22 @@ class EditActivity : AppCompatActivity() {
                         finish()
                     } else if (way == MODE_ADD) {
                         // 新增模式：让ViewModel处理加密
+                        Log.d(TAG, "开始新增密码数据")
                         val result = viewModel.addPw(
                             Password(
-                                textFieldDes.editableText.toString(),
-                                textFieldAccount.editableText.toString(),
-                                textFieldPassword.editableText.toString(), // 传入明文密码
-                                isEncrypted = false // ViewModel会处理加密
+                                textFieldDes.text?.toString() ?: "",
+                                textFieldAccount.text?.toString() ?: "",
+                                textFieldPassword.text?.toString() ?: "" ,// 传入明文密码，ViewModel会处理加密
+                                isEncrypted = false
                             )
                         )
+                        Log.d(TAG, "新增密码结果: $result")
                         if (result > 0) {
                             Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
                             finish()
+                        } else {
+                            Log.e(TAG, "新增密码失败，返回结果: $result")
+                            Toast.makeText(this, "保存失败，请重试", Toast.LENGTH_SHORT).show()
                         }
                     }
                     true

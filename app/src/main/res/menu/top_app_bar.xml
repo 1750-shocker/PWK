@@ -22,4 +22,16 @@
         android:title="@string/out"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/clear_all"
+        android:contentDescription="@string/content_description_clear_all"
+        android:title="@string/clear_all"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/import_legacy"
+        android:contentDescription="@string/content_description_import_legacy"
+        android:title="@string/import_legacy"
+        app:showAsAction="never" />
+
 </menu>

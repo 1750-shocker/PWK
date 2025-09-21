@@ -13,4 +13,19 @@
     <string name="des">描述</string>
     <string name="account">账号</string>
     <string name="password">密码</string>
+    <string name="clear_all">清除所有数据</string>
+    <string name="content_description_clear_all">清除所有数据</string>
+    <string name="clear_all_confirm_title">确认清除</string>
+    <string name="clear_all_confirm_message">确定要清除所有密码数据吗？此操作不可撤销。</string>
+    <string name="clear_all_confirm_yes">确定</string>
+    <string name="clear_all_confirm_no">取消</string>
+    <string name="clear_all_success">所有数据已清除</string>
+    <string name="import_legacy">导入旧版数据</string>
+    <string name="content_description_import_legacy">导入旧版数据</string>
+    <string name="import_legacy_confirm_title">导入旧版数据</string>
+    <string name="import_legacy_confirm_message">确定要导入旧版密码数据吗？这将清空当前数据并导入旧版数据。</string>
+    <string name="import_legacy_confirm_yes">确定</string>
+    <string name="import_legacy_confirm_no">取消</string>
+    <string name="import_legacy_success">旧版数据导入完成</string>
+    <string name="import_legacy_failed">旧版数据导入失败</string>
 </resources>

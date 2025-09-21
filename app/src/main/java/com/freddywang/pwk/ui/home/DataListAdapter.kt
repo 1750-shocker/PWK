@@ -26,7 +26,10 @@ class PasswordDiffCallback : DiffUtil.ItemCallback<Password>() {
     }
 
     override fun areContentsTheSame(oldItem: Password, newItem: Password): Boolean {
-        return oldItem == newItem
+        return oldItem.des == newItem.des && 
+               oldItem.account == newItem.account && 
+               oldItem.password == newItem.password && 
+               oldItem.isEncrypted == newItem.isEncrypted
     }
 }
 

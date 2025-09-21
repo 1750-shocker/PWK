@@ -11,7 +11,7 @@ import com.freddywang.pwk.logic.model.Password
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-@Database(version = 2, entities = [Password::class], exportSchema = false)
+@Database(version = 1, entities = [Password::class], exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun passwordDao(): PasswordDao
 
@@ -26,7 +26,6 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "app_database"
             ).allowMainThreadQueries()
-                .addMigrations(MIGRATION_1_2)
                 .build().apply { instance = this }
         }
 
