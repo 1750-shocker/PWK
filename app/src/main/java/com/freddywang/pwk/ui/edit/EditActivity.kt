@@ -12,7 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
-import com.freddywang.pwk.util.CryptoUtil
+ 
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
 
@@ -72,17 +72,14 @@ class EditActivity : AppCompatActivity() {
                     } else if (textFieldPassword.text?.toString().isNullOrEmpty()) {
                         Toast.makeText(this, "请输入密码", Toast.LENGTH_SHORT).show()
                     } else if (way == MODE_EDIT) {
-                        // 编辑模式：直接加密明文密码
+                        // 编辑模式：直接保存明文密码
                         val currentPassword = textFieldPassword.text.toString()
                         Log.d(TAG, "当前明文:${currentPassword}")
                         Log.d(TAG, "将要更新的id:${id}")
-                        
-                        val encryptedPassword = CryptoUtil.encrypt(this, currentPassword)
                         val p = Password(
                             textFieldDes.text.toString(),
                             textFieldAccount.text.toString(),
-                            encryptedPassword,
-                            isEncrypted = true
+                            currentPassword
                         )
                         p.id = id
                         Log.d(TAG, "准备更新密码对象: id=${p.id}, des=${p.des}, account=${p.account} password=${p.password}")
@@ -91,14 +88,13 @@ class EditActivity : AppCompatActivity() {
                         Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
                         finish()
                     } else if (way == MODE_ADD) {
-                        // 新增模式：让ViewModel处理加密
+                        // 新增模式：直接以明文交给 ViewModel 保存
                         Log.d(TAG, "开始新增密码数据")
                         val result = viewModel.addPw(
                             Password(
                                 textFieldDes.text?.toString() ?: "",
                                 textFieldAccount.text?.toString() ?: "",
-                                textFieldPassword.text?.toString() ?: "" ,// 传入明文密码，ViewModel会处理加密
-                                isEncrypted = false
+                                textFieldPassword.text?.toString() ?: ""
                             )
                         )
                         Log.d(TAG, "新增密码结果: $result")

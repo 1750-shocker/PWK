@@ -22,7 +22,6 @@ import com.freddywang.pwk.logic.jsonToList
 import com.freddywang.pwk.logic.listToJson
 import com.freddywang.pwk.logic.model.Password
 import com.freddywang.pwk.ui.edit.EditActivity
-import com.freddywang.pwk.util.CryptoUtil
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.*
 import java.io.BufferedReader
@@ -167,14 +166,10 @@ class MainActivity : AppCompatActivity() {
                 val text = builder.toString()
                 Log.d("wzhhh", "导入 - 读取的JSON内容: $text")
                 
-                // 验证应用签名
-                val signatureHash = CryptoUtil.getAppSignatureHash(this)
-                Log.d("wzhhh", "导入 - 当前应用签名: $signatureHash")
-                
                 val list: List<Password> = jsonToList(text)
                 Log.d("wzhhh", "导入 - 解析后密码数量: ${list.size}")
                 list.forEachIndexed { index, password ->
-                    Log.d("wzhhh", "导入 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}, isEncrypted=${password.isEncrypted}")
+                    Log.d("wzhhh", "导入 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}")
                 }
                 
                 viewModel.cleanTable()
@@ -199,15 +194,14 @@ class MainActivity : AppCompatActivity() {
                 val list: ArrayList<Password>? = viewModel.outPutAllDBPassword()
                 Log.d("wzhhh", "导出 - 从数据库获取密码数量: ${list?.size ?: 0}")
                 list?.forEachIndexed { index, password ->
-                    Log.d("wzhhh", "导出 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}, isEncrypted=${password.isEncrypted}")
+                    Log.d("wzhhh", "导出 - 密码$index: des=${password.des}, account=${password.account}, password=${password.password}")
                 }
                 // 导出时创建不包含id的数据
                 val exportList = list?.map { password ->
                     ExportPassword(
                         des = password.des,
                         account = password.account,
-                        password = password.password, // 直接使用已加密的密码
-                        isEncrypted = password.isEncrypted
+                        password = password.password
                     )
                 }
                 val text: String? = exportList?.let { 
@@ -251,8 +245,7 @@ class MainActivity : AppCompatActivity() {
                             val newPassword = Password(
                                 des = legacyPassword.des,
                                 account = legacyPassword.account,
-                                password = legacyPassword.password, // 旧版密码作为明文
-                                isEncrypted = false // 标记为明文，让addPw方法重新加密
+                                password = legacyPassword.password
                             )
                             
                             val result = viewModel.addPw(newPassword)
@@ -352,8 +345,7 @@ class MainActivity : AppCompatActivity() {
     data class ExportPassword(
         val des: String,
         val account: String,
-        val password: String,
-        val isEncrypted: Boolean
+        val password: String
     )
 
     private fun performSearch(query: String) {

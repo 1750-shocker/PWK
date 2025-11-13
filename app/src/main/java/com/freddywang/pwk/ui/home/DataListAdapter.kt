@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.freddywang.pwk.R
 import com.freddywang.pwk.logic.model.Password
 import com.freddywang.pwk.ui.edit.EditActivity
-import com.freddywang.pwk.util.CryptoUtil
+ 
 import java.sql.SQLException
 
 class PasswordDiffCallback : DiffUtil.ItemCallback<Password>() {
@@ -28,8 +28,7 @@ class PasswordDiffCallback : DiffUtil.ItemCallback<Password>() {
     override fun areContentsTheSame(oldItem: Password, newItem: Password): Boolean {
         return oldItem.des == newItem.des && 
                oldItem.account == newItem.account && 
-               oldItem.password == newItem.password && 
-               oldItem.isEncrypted == newItem.isEncrypted
+               oldItem.password == newItem.password
     }
 }
 

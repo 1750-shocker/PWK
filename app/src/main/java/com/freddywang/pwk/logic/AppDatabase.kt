@@ -11,7 +11,7 @@ import com.freddywang.pwk.logic.model.Password
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-@Database(version = 1, entities = [Password::class], exportSchema = false)
+@Database(version = 2, entities = [Password::class], exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun passwordDao(): PasswordDao
 
@@ -26,34 +26,30 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "app_database"
             ).allowMainThreadQueries()
+                .addMigrations(MIGRATION_1_2)
                 .build().apply { instance = this }
         }
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // 1. 创建临时表（完全匹配Room期望的结构）
+                // 1. 创建新表（不包含 isEncrypted 列）
                 database.execSQL(
-                    "CREATE TABLE Password_temp (" +
+                    "CREATE TABLE IF NOT EXISTS Password_new (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "des TEXT NOT NULL, " +
                     "account TEXT NOT NULL, " +
-                    "password TEXT NOT NULL, " +
-                    "isEncrypted INTEGER NOT NULL)"
+                    "password TEXT NOT NULL)"
                 )
-                
-                // 2. 复制数据
+                // 2. 迁移旧数据到新表
                 database.execSQL(
-                    "INSERT INTO Password_temp (id, des, account, password, isEncrypted) " +
-                    "SELECT id, des, account, password, 1 FROM Password"
+                    "INSERT INTO Password_new (id, des, account, password) " +
+                    "SELECT id, des, account, password FROM Password"
                 )
-                
                 // 3. 删除旧表
                 database.execSQL("DROP TABLE Password")
-                
-                // 4. 重命名临时表
-                database.execSQL("ALTER TABLE Password_temp RENAME TO Password")
-                
-                // 5. 创建索引（完全匹配Room期望的索引格式）
+                // 4. 重命名新表
+                database.execSQL("ALTER TABLE Password_new RENAME TO Password")
+                // 5. 创建索引
                 database.execSQL("CREATE INDEX index_Password_des ON Password (des)")
             }
         }
@@ -63,9 +59,6 @@ abstract class AppDatabase : RoomDatabase() {
 fun jsonToList(json: String): List<Password> {
     val type = object : TypeToken<List<Password>>() {}.type
     val passwords = Gson().fromJson<List<Password>>(json, type)
-    
-    // 完全信任JSON中的isEncrypted标志
-    // 导出功能会确保所有密码都实际加密，导入时直接使用标志
     return passwords
 }
 
